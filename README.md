@@ -2,9 +2,9 @@
 공주대 로봇팔과정 팀1 저장소
 
 **md**
-* PLAN : 수행계획서
-* DEV_LOG : 일자별 개발 기록
-* TECH : 기술서
+* PLAN : [수행계획서](./PLAN.md)
+* DEV_LOG : [일자별 개발 기록](./DEV_LOG.md)
+* TECH : [기술서](./TECH.md)
 
 **folder**
 * settings : 프로젝트 진행시 통일해야 할 것으로 보이는 설정 경로 및 파일
