@@ -132,10 +132,9 @@
 
 ## 9. 참조
 
-<<<<<<< main
 * **GitHub Repository**: https://github.com/britams/ROS_Team1
 * **발표 자료**: [추후 입력]
 =======
 * **[GitHub Repository]**: [링크 또는 출처 입력]
 * **[발표 자료]**: [링크 또는 출처 입력]](https://github.com/ACUBCU/ROS_Team1)
->>>>>>> main
+
