@@ -1,4 +1,4 @@
-# 프로젝트 기술서: ArUco ID 기반 Pick and Place
+[# 프로젝트 기술서: ArUco ID 기반 Pick and Place
 
 ## 1. 프로젝트 개요
 
@@ -104,4 +104,4 @@
 ## 9. 참조
 
 * **[GitHub Repository]**: [링크 또는 출처 입력]
-* **[발표 자료]**: [링크 또는 출처 입력]
+* **[발표 자료]**: [링크 또는 출처 입력]](https://github.com/ACUBCU/ROS_Team1)
