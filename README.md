@@ -9,3 +9,4 @@
 # folder
 * settings : 프로젝트 진행시 통일해야 할 것으로 보이는 설정 경로 및 파일
 * final_project_ws : 기본 작업 환경
+* Team : 팀 작업물
