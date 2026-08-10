@@ -41,7 +41,7 @@
 | 백엔드 | Python, ROS (Robot Operating System), Flask |
 | 프론트엔드 | pywebview, HTML5, JavaScript, CSS |
 | 비전 | OpenCV |
-| 데이터 모델 |  |
+| 데이터 모델 | JSON |
 ## 사용 장비
 
 * RGB 카메라 (Gazebo ROS Camera Plugin)
