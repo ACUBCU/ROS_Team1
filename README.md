@@ -1,12 +1,12 @@
 # ROS_Team1
 공주대 로봇팔과정 팀1 저장소
 
-# md
+**md**
 * PLAN : 수행계획서
 * DEV_LOG : 일자별 개발 기록
 * TECH : 기술서
 
-# folder
+**folder**
 * settings : 프로젝트 진행시 통일해야 할 것으로 보이는 설정 경로 및 파일
 * final_project_ws : 기본 작업 환경
 * Team : 팀 작업물
