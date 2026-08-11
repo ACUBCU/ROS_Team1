@@ -100,15 +100,15 @@ class ArmSequenceController(Node):
             for event_name in self.config.startup_events:
                 self._send_event(event_name, repeat=3)
 
-            home = MotionStep(
-                name="startup_home",
-                positions=self.config.initial_positions,
-                gripper=self.config.initial_gripper,
-                duration=3.0,
-                hold=0.5,
+            observation = MotionStep(
+                name="startup_observation",
+                positions=self.config.observation_positions,
+                gripper=self.config.observation_gripper,
+                duration=self.config.observation_duration,
+                hold=self.config.observation_hold,
                 after=None,
             )
-            self._execute_step(home, marker_id=-1)
+            self._execute_step(observation, marker_id=-1)
             self._publish_status("READY")
 
             while not self.stop_event.is_set():

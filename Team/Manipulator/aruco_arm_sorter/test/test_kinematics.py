@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from aruco_arm_sorter.kinematics import end_effector_position
+from aruco_arm_sorter.kinematics import camera_position, end_effector_position
 from aruco_arm_sorter.motion_config import load_motion_config
 
 
@@ -44,3 +44,11 @@ def test_approach_pose_is_above_pick_pose():
 def test_home_pose_is_above_boxes():
     _, _, z = end_effector_position(**CONFIG.initial_positions)
     assert z > 0.14
+
+
+def test_observation_camera_is_centered_above_markers():
+    x, y, z = camera_position(**CONFIG.observation_positions)
+    assert x == pytest.approx(0.246, abs=0.004)
+    assert y == pytest.approx(0.0, abs=0.002)
+    assert z == pytest.approx(0.330, abs=0.006)
+    assert sum(CONFIG.observation_positions.values()) == pytest.approx(0.0, abs=0.01)

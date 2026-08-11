@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-import xml.etree.ElementTree as ET
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -13,32 +12,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 import xacro
 
-
-def _add_detachable_joints(robot_description: str) -> str:
-    root = ET.fromstring(robot_description)
-    gazebo = ET.SubElement(root, "gazebo")
-    ET.SubElement(gazebo, "self_collide").text = "true"
-
-    for index in (0, 1):
-        plugin = ET.SubElement(
-            gazebo,
-            "plugin",
-            {
-                "filename": "gz-sim-detachable-joint-system",
-                "name": "gz::sim::systems::DetachableJoint",
-            },
-        )
-        values = {
-            "parent_link": "link5",
-            "child_model": f"marker{index}_box",
-            "child_link": "box_link",
-            "attach_topic": f"/arm/grasp/marker{index}/attach",
-            "detach_topic": f"/arm/grasp/marker{index}/detach",
-            "output_topic": f"/arm/grasp/marker{index}/state",
-        }
-        for tag, value in values.items():
-            ET.SubElement(plugin, tag).text = value
-    return ET.tostring(root, encoding="unicode")
+from aruco_arm_sorter.robot_description import customize_robot_description
 
 
 def generate_launch_description():
@@ -59,7 +33,7 @@ def generate_launch_description():
     )
 
     doc = xacro.process_file(xacro_path, mappings={"use_sim": "true"})
-    robot_description = _add_detachable_joints(doc.toxml())
+    robot_description = customize_robot_description(doc.toxml())
 
     resource_entries = [
         model_path,
@@ -143,6 +117,19 @@ def generate_launch_description():
         output="screen",
         parameters=[{"motion_file": motion_path, "use_sim_time": True}],
     )
+    aruco_detector = Node(
+        package="aruco_arm_sorter",
+        executable="aruco_detector",
+        name="aruco_detector",
+        output="screen",
+        parameters=[
+            {
+                "use_sim_time": True,
+                "allowed_marker_ids": [0, 1],
+                "required_consecutive_detections": 5,
+            }
+        ],
+    )
 
     return LaunchDescription(
         [
@@ -161,7 +148,7 @@ def generate_launch_description():
             RegisterEventHandler(
                 OnProcessExit(
                     target_action=controller_spawner,
-                    on_exit=[sequence_controller],
+                    on_exit=[sequence_controller, aruco_detector],
                 )
             ),
             gazebo,

@@ -2,8 +2,8 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>aruco_arm_sorter</name>
-  <version>2.0.0</version>
-  <description>ArUco-selected Gazebo trajectories for ROBOTIS OpenMANIPULATOR-X.</description>
+  <version>3.0.0</version>
+  <description>Camera-based ArUco sorting in Gazebo for ROBOTIS OpenMANIPULATOR-X.</description>
   <maintainer email="student@example.com">ROS Student</maintainer>
   <license>Apache-2.0</license>
 
@@ -14,6 +14,7 @@
   <exec_depend>builtin_interfaces</exec_depend>
   <exec_depend>control_msgs</exec_depend>
   <exec_depend>controller_manager</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
   <exec_depend>gz_ros2_control</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
@@ -22,11 +23,14 @@
   <exec_depend>open_manipulator_bringup</exec_depend>
   <exec_depend>open_manipulator_description</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>xacro</exec_depend>

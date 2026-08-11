@@ -35,6 +35,10 @@ class MotionConfig:
     gripper_limits: Tuple[float, float]
     initial_positions: Dict[str, float]
     initial_gripper: float
+    observation_positions: Dict[str, float]
+    observation_gripper: float
+    observation_duration: float
+    observation_hold: float
     events: Dict[str, str]
     startup_events: Tuple[str, ...]
     marker_sequences: Dict[int, str]
@@ -102,7 +106,9 @@ def load_motion_config(path) -> MotionConfig:
             _as_float(pair[1], f"limits.{joint}[1]"),
         )
         if limits[0] >= limits[1]:
-            raise ValueError(f"limits.{joint}의 최솟값은 최댓값보다 작아야 합니다.")
+            raise ValueError(
+                f"limits.{joint}의 최솟값은 최댓값보다 작아야 합니다."
+            )
         joint_limits[joint] = limits
 
     gripper_pair = limits_raw.get("gripper")
@@ -121,6 +127,32 @@ def load_motion_config(path) -> MotionConfig:
         initial_positions[joint] = value
     initial_gripper = _as_float(initial.get("gripper"), "initial.gripper")
     _validate_range(initial_gripper, gripper_limits, "initial.gripper")
+
+    observation = _require_mapping(root.get("observation"), "observation")
+    observation_positions_raw = _require_mapping(
+        observation.get("positions"), "observation.positions"
+    )
+    observation_positions = {}
+    for joint in ARM_JOINTS:
+        value = _as_float(
+            observation_positions_raw.get(joint), f"observation.positions.{joint}"
+        )
+        _validate_range(value, joint_limits[joint], f"observation.positions.{joint}")
+        observation_positions[joint] = value
+    observation_gripper = _as_float(
+        observation.get("gripper"), "observation.gripper"
+    )
+    _validate_range(observation_gripper, gripper_limits, "observation.gripper")
+    observation_duration = _as_float(
+        observation.get("duration", 3.0), "observation.duration"
+    )
+    observation_hold = _as_float(
+        observation.get("hold", 0.5), "observation.hold"
+    )
+    if observation_duration <= 0.0 or observation_hold < 0.0:
+        raise ValueError(
+            "observation.duration은 양수, observation.hold는 0 이상이어야 합니다."
+        )
 
     events_raw = _require_mapping(root.get("events"), "events")
     events = {
@@ -170,12 +202,16 @@ def load_motion_config(path) -> MotionConfig:
             duration = _as_float(step_raw.get("duration", 1.0), f"{label}.duration")
             hold = _as_float(step_raw.get("hold", 0.0), f"{label}.hold")
             if duration <= 0.0 or hold < 0.0:
-                raise ValueError(f"{label}의 duration은 양수, hold는 0 이상이어야 합니다.")
+                raise ValueError(
+                    f"{label}의 duration은 양수, hold는 0 이상이어야 합니다."
+                )
 
             after_value = step_raw.get("after")
             after = None if after_value in (None, "") else str(after_value)
             if after is not None and after not in events:
-                raise ValueError(f"{label}.after에 정의되지 않은 event가 있습니다: {after}")
+                raise ValueError(
+                    f"{label}.after에 정의되지 않은 event가 있습니다: {after}"
+                )
 
             parsed_steps.append(
                 MotionStep(
@@ -204,7 +240,9 @@ def load_motion_config(path) -> MotionConfig:
         "controller.action_server_timeout",
     )
     if startup_delay < 0.0 or action_server_timeout <= 0.0:
-        raise ValueError("startup_delay는 0 이상, action_server_timeout은 양수여야 합니다.")
+        raise ValueError(
+            "startup_delay는 0 이상, action_server_timeout은 양수여야 합니다."
+        )
 
     return MotionConfig(
         marker_topic=marker_topic,
@@ -216,6 +254,10 @@ def load_motion_config(path) -> MotionConfig:
         gripper_limits=gripper_limits,
         initial_positions=initial_positions,
         initial_gripper=initial_gripper,
+        observation_positions=observation_positions,
+        observation_gripper=observation_gripper,
+        observation_duration=observation_duration,
+        observation_hold=observation_hold,
         events=events,
         startup_events=startup_events,
         marker_sequences=marker_sequences,

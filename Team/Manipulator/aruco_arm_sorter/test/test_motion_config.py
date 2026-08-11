@@ -26,6 +26,12 @@ def test_uses_ros2_control_action_interfaces():
     assert CONFIG.gripper_action == "/gripper_controller/gripper_cmd"
 
 
+def test_observation_pose_is_used_after_each_sequence():
+    for steps in CONFIG.sequences.values():
+        assert steps[-1].positions == CONFIG.observation_positions
+        assert steps[-1].gripper == CONFIG.observation_gripper
+
+
 def test_each_sequence_has_one_matching_attach_and_detach_event():
     events_0 = [step.after for step in CONFIG.sequences["marker_0_to_A"]]
     events_1 = [step.after for step in CONFIG.sequences["marker_1_to_B"]]
