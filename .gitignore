@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# VS Code
+.vscode/
+
+# Temporary files
+*.tmp
+*.bak
+*~
