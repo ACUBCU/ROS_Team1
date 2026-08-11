@@ -1,0 +1,167 @@
+# OpenMANIPULATOR-X 공식 URDF 관절 기준입니다.
+# 관절각 단위는 rad, 시간 단위는 s입니다.
+controller:
+  startup_delay: 2.0
+  action_server_timeout: 45.0
+  # DetachableJoint는 시작 시 두 박스에 연결되므로 먼저 해제합니다.
+  startup_events:
+    - detach_marker_0
+    - detach_marker_1
+
+interfaces:
+  marker_id: /detected_marker_id
+  arm_action: /arm_controller/follow_joint_trajectory
+  gripper_action: /gripper_controller/gripper_cmd
+
+# ROBOTIS Jazzy open_manipulator_x URDF의 관절 제한
+limits:
+  joint1: [-3.1415926536, 3.1415926536]
+  joint2: [-1.5, 1.5]
+  joint3: [-1.5, 1.4]
+  joint4: [-1.7, 1.97]
+  gripper: [-0.011, 0.020]
+
+# ROBOTIS initial_positions.yaml과 같은 기본 home 자세
+initial:
+  joint1: 0.0
+  joint2: -1.0
+  joint3: 1.0
+  joint4: 0.0
+  gripper: 0.019
+
+events:
+  attach_marker_0: /arm/grasp/marker0/attach
+  detach_marker_0: /arm/grasp/marker0/detach
+  attach_marker_1: /arm/grasp/marker1/attach
+  detach_marker_1: /arm/grasp/marker1/detach
+
+markers:
+  0: marker_0_to_A
+  1: marker_1_to_B
+
+sequences:
+  marker_0_to_A:
+    - name: pick_0_approach
+      positions: {joint1: 0.45, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.019
+      duration: 2.0
+      hold: 0.2
+
+    - name: pick_0_lower_and_attach
+      positions: {joint1: 0.45, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.019
+      duration: 1.5
+      hold: 0.3
+      after: attach_marker_0
+
+    - name: pick_0_close
+      positions: {joint1: 0.45, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.000
+      duration: 0.7
+      hold: 0.3
+
+    - name: pick_0_lift
+      positions: {joint1: 0.45, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.000
+      duration: 1.5
+      hold: 0.2
+
+    - name: transfer_0_high
+      positions: {joint1: 1.20, joint2: -1.00, joint3: 1.00, joint4: 0.00}
+      gripper: 0.000
+      duration: 2.0
+      hold: 0.2
+
+    - name: place_A_approach
+      positions: {joint1: 1.20, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.000
+      duration: 1.5
+      hold: 0.2
+
+    - name: place_A_lower
+      positions: {joint1: 1.20, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.000
+      duration: 1.5
+      hold: 0.3
+
+    - name: place_A_open_and_detach
+      positions: {joint1: 1.20, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.019
+      duration: 0.7
+      hold: 0.3
+      after: detach_marker_0
+
+    - name: leave_A
+      positions: {joint1: 1.20, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.019
+      duration: 1.5
+      hold: 0.2
+
+    - name: home_after_0
+      positions: {joint1: 0.00, joint2: -1.00, joint3: 1.00, joint4: 0.00}
+      gripper: 0.019
+      duration: 2.0
+      hold: 0.3
+
+  marker_1_to_B:
+    - name: pick_1_approach
+      positions: {joint1: -0.45, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.019
+      duration: 2.0
+      hold: 0.2
+
+    - name: pick_1_lower_and_attach
+      positions: {joint1: -0.45, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.019
+      duration: 1.5
+      hold: 0.3
+      after: attach_marker_1
+
+    - name: pick_1_close
+      positions: {joint1: -0.45, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.000
+      duration: 0.7
+      hold: 0.3
+
+    - name: pick_1_lift
+      positions: {joint1: -0.45, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.000
+      duration: 1.5
+      hold: 0.2
+
+    - name: transfer_1_high
+      positions: {joint1: -1.20, joint2: -1.00, joint3: 1.00, joint4: 0.00}
+      gripper: 0.000
+      duration: 2.0
+      hold: 0.2
+
+    - name: place_B_approach
+      positions: {joint1: -1.20, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.000
+      duration: 1.5
+      hold: 0.2
+
+    - name: place_B_lower
+      positions: {joint1: -1.20, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.000
+      duration: 1.5
+      hold: 0.3
+
+    - name: place_B_open_and_detach
+      positions: {joint1: -1.20, joint2: 0.70, joint3: 0.60, joint4: -1.30}
+      gripper: 0.019
+      duration: 0.7
+      hold: 0.3
+      after: detach_marker_1
+
+    - name: leave_B
+      positions: {joint1: -1.20, joint2: 0.30, joint3: 0.70, joint4: -1.00}
+      gripper: 0.019
+      duration: 1.5
+      hold: 0.2
+
+    - name: home_after_1
+      positions: {joint1: 0.00, joint2: -1.00, joint3: 1.00, joint4: 0.00}
+      gripper: 0.019
+      duration: 2.0
+      hold: 0.3
