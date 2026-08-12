@@ -13,6 +13,10 @@ from ament_index_python.packages import get_package_share_directory
 from aruco_arm_sorter.motion_config import load_motion_config
 
 
+PACKAGE_NAME = "aruco_arm_sorter"
+REQUIRED_EXECUTABLES = ("arm_sequence_controller", "aruco_detector", "preflight")
+
+
 def _check_ros_package(name: str) -> bool:
     result = subprocess.run(
         ["ros2", "pkg", "prefix", name],
@@ -23,24 +27,110 @@ def _check_ros_package(name: str) -> bool:
     return result.returncode == 0
 
 
-def _check_active_prefix(share: Path, failures) -> None:
-    """Show the selected overlay and optionally require an exact prefix."""
+def _expanded_path(value: str) -> Path:
+    return Path(os.path.expandvars(os.path.expanduser(value))).resolve()
 
-    prefix = share.parents[1]
-    print(f"INFO 활성 aruco_arm_sorter prefix: {prefix}")
+
+def _expected_prefix() -> Path | None:
     expected_value = os.environ.get("ARUCO_ARM_SORTER_EXPECTED_PREFIX", "").strip()
-    if not expected_value:
-        return
+    if expected_value:
+        return _expanded_path(expected_value)
 
-    expected = Path(os.path.expandvars(os.path.expanduser(expected_value))).resolve()
+    workspace_value = os.environ.get("ARUCO_ARM_SORTER_WORKSPACE_ROOT", "").strip()
+    if workspace_value:
+        return _expanded_path(workspace_value) / "install" / PACKAGE_NAME
+    return None
+
+
+def _check_active_prefix(share: Path, failures) -> Path:
+    """Show the selected overlay and require the requested repository install."""
+
+    prefix = share.parent.parent.resolve()
+    print(f"INFO 활성 {PACKAGE_NAME} prefix: {prefix}")
+    expected = _expected_prefix()
+    if expected is None:
+        print(
+            "WARN 기대 prefix가 지정되지 않았습니다. "
+            "Team/Manipulator/workspace.sh doctor 사용을 권장합니다."
+        )
+        return prefix
+
+    expected = expected.resolve()
     if prefix != expected:
         failures.append(
-            "다른 작업공간의 aruco_arm_sorter가 선택됨: "
+            f"다른 작업공간의 {PACKAGE_NAME}가 선택됨: "
             f"현재={prefix}, 기대={expected}"
         )
         print(f"FAIL 활성 패키지 위치: 현재={prefix}, 기대={expected}")
     else:
         print(f"OK  활성 패키지 위치: {prefix}")
+    return prefix
+
+
+def _check_duplicate_prefixes(active_prefix: Path) -> None:
+    matches = []
+    for value in os.environ.get("AMENT_PREFIX_PATH", "").split(os.pathsep):
+        if not value:
+            continue
+        prefix = _expanded_path(value)
+        marker = (
+            prefix
+            / "share"
+            / "ament_index"
+            / "resource_index"
+            / "packages"
+            / PACKAGE_NAME
+        )
+        if marker.is_file() and prefix not in matches:
+            matches.append(prefix)
+
+    inactive = [path for path in matches if path != active_prefix]
+    if inactive:
+        print("WARN 동명 패키지가 다른 prefix에도 남아 있습니다:")
+        for path in inactive:
+            print(f"- {path}")
+        print(
+            "INFO 현재 활성 prefix가 위의 OK 위치와 같으면 "
+            "실행에는 사용되지 않습니다."
+        )
+
+
+def _check_runtime_executables(prefix: Path, failures) -> None:
+    executable_dir = prefix / "lib" / PACKAGE_NAME
+    for executable in REQUIRED_EXECUTABLES:
+        path = executable_dir / executable
+        if not path.is_file() or not os.access(path, os.X_OK):
+            failures.append(f"설치 실행 파일 없음: {path}")
+            print(f"FAIL 설치 실행 파일: {executable}")
+        else:
+            print(f"OK  설치 실행 파일: {executable}")
+
+
+def _check_project_identity(path: Path, failures) -> None:
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+        project = raw["project"]
+    except (AttributeError, OSError, TypeError, KeyError, yaml.YAMLError) as exc:
+        failures.append(f"프로젝트 식별 파일 오류: {exc}")
+        print(f"FAIL 프로젝트 식별 파일: {path}")
+        return
+
+    expected_values = {
+        "repository": "ACUBCU/ROS_Team1",
+        "package_path": "Team/Manipulator/aruco_arm_sorter",
+        "layout_version": 1,
+        "package_version": "3.1.0",
+    }
+    mismatches = {
+        key: (project.get(key), expected)
+        for key, expected in expected_values.items()
+        if project.get(key) != expected
+    }
+    if mismatches:
+        failures.append(f"프로젝트 식별 값 불일치: {mismatches}")
+        print(f"FAIL 프로젝트 식별 값: {mismatches}")
+    else:
+        print("OK  ROS_Team1 프로젝트 식별 및 패키지 버전")
 
 
 def _check_sensor_pipeline(paths, failures) -> None:
@@ -120,9 +210,12 @@ def main() -> None:
         else:
             print("OK  OpenCV aruco 모듈")
 
-    share = Path(get_package_share_directory("aruco_arm_sorter")).resolve()
-    _check_active_prefix(share, failures)
+    share = Path(get_package_share_directory(PACKAGE_NAME)).absolute()
+    active_prefix = _check_active_prefix(share, failures)
+    _check_duplicate_prefixes(active_prefix)
+    _check_runtime_executables(active_prefix, failures)
     paths = {
+        "프로젝트 식별 YAML": share / "config" / "project.yaml",
         "동작 YAML": share / "config" / "motions.yaml",
         "bridge YAML": share / "config" / "bridge.yaml",
         "world SDF": share / "worlds" / "sorting_world.sdf",
@@ -164,6 +257,8 @@ def main() -> None:
                 continue
         print(f"OK  {label}: {path}")
 
+    _check_project_identity(paths["프로젝트 식별 YAML"], failures)
+
     _check_sensor_pipeline(paths, failures)
 
     if shutil.which("ros2"):
@@ -173,6 +268,7 @@ def main() -> None:
             "gz_ros2_control",
             "controller_manager",
             "joint_trajectory_controller",
+            "position_controllers",
             "ros_gz_sim",
             "ros_gz_bridge",
             "control_msgs",

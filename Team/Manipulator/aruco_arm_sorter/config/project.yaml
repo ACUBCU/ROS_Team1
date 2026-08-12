@@ -1,0 +1,5 @@
+project:
+  repository: ACUBCU/ROS_Team1
+  package_path: Team/Manipulator/aruco_arm_sorter
+  layout_version: 1
+  package_version: 3.1.0

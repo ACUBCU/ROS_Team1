@@ -1,0 +1,215 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+
+# If not running interactively, don't do anything.
+case $- in
+  *i*) ;;
+  *) return ;;
+esac
+
+# History.
+HISTCONTROL=ignoreboth
+shopt -s histappend
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# Keep LINES and COLUMNS in sync with the terminal size.
+shopt -s checkwinsize
+
+# Make less friendlier for non-text input files.
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# Identify a Debian chroot in the prompt when present.
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+  debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# Prompt.
+case "$TERM" in
+  xterm-color|*-256color) color_prompt=yes ;;
+esac
+
+if [ -n "${force_color_prompt:-}" ]; then
+  if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    color_prompt=yes
+  else
+    color_prompt=
+  fi
+fi
+
+if [ "${color_prompt:-}" = yes ]; then
+  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# Set the xterm title to user@host:dir.
+case "$TERM" in
+  xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+esac
+
+# Colors and common aliases.
+if [ -x /usr/bin/dircolors ]; then
+  test -r "$HOME/.dircolors" \
+    && eval "$(dircolors -b "$HOME/.dircolors")" \
+    || eval "$(dircolors -b)"
+  alias ls='ls --color=auto'
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
+fi
+
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# User aliases.
+if [ -f "$HOME/.bash_aliases" ]; then
+  # shellcheck disable=SC1091
+  . "$HOME/.bash_aliases"
+fi
+
+# Programmable completion.
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    # shellcheck disable=SC1091
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    # shellcheck disable=SC1091
+    . /etc/bash_completion
+  fi
+fi
+
+# ============================================================
+# ROS_Team1 project environment
+# ============================================================
+
+# Project paths. The repository is expected at ~/ROS_Team1.
+export ROS_TEAM1_ROOT="${ROS_TEAM1_ROOT:-$HOME/ROS_Team1}"
+export ROS_TEAM1_MANIPULATOR_ROOT="$ROS_TEAM1_ROOT/Team/Manipulator"
+export MANIPULATOR_PKG="$ROS_TEAM1_MANIPULATOR_ROOT/aruco_arm_sorter"
+export ROS_TEAM1_HELPER="$ROS_TEAM1_MANIPULATOR_ROOT/workspace.sh"
+
+# Remove inherited entries from the old project workspaces before sourcing ROS.
+# This also makes `source ~/.bashrc` safe in a terminal that previously loaded
+# ~/Ros/move_arm or a source-tree Gazebo resource path.
+_ros_team1_remove_old_path_entries() {
+  local variable_name="$1"
+  local raw_value="${!variable_name-}"
+  local entry
+  local filtered=""
+  local -a entries=()
+
+  IFS=':' read -r -a entries <<< "$raw_value"
+  for entry in "${entries[@]}"; do
+    [ -n "$entry" ] || continue
+    case "$entry" in
+      "$HOME/Ros/move_arm"|"$HOME/Ros/move_arm/"*|\
+      "$HOME/Ros/open_manipulator_ws"|"$HOME/Ros/open_manipulator_ws/"*|\
+      "$MANIPULATOR_PKG"|"$MANIPULATOR_PKG/"*)
+        continue
+        ;;
+    esac
+    if [ -n "$filtered" ]; then
+      filtered="$filtered:$entry"
+    else
+      filtered="$entry"
+    fi
+  done
+
+  if [ -n "$filtered" ]; then
+    printf -v "$variable_name" '%s' "$filtered"
+    export "$variable_name"
+  else
+    unset "$variable_name"
+  fi
+}
+
+for _ros_team1_path_variable in \
+  AMENT_PREFIX_PATH \
+  CMAKE_PREFIX_PATH \
+  COLCON_PREFIX_PATH \
+  CPATH \
+  GAZEBO_MODEL_PATH \
+  GZ_SIM_RESOURCE_PATH \
+  LD_LIBRARY_PATH \
+  PATH \
+  PKG_CONFIG_PATH \
+  PYTHONPATH \
+  ROS_PACKAGE_PATH; do
+  _ros_team1_remove_old_path_entries "$_ros_team1_path_variable"
+done
+unset _ros_team1_path_variable
+unset -f _ros_team1_remove_old_path_entries
+
+# ROS 2 Jazzy base environment.
+export ARUCO_ROS_DISTRO="${ARUCO_ROS_DISTRO:-jazzy}"
+export ARUCO_ROS_SETUP="${ARUCO_ROS_SETUP:-/opt/ros/$ARUCO_ROS_DISTRO/setup.bash}"
+if [ -f "$ARUCO_ROS_SETUP" ]; then
+  # shellcheck disable=SC1090
+  source "$ARUCO_ROS_SETUP"
+fi
+
+# Optional shell completion helpers. Missing packages do not break new shells.
+if [ -f /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash ]; then
+  # shellcheck disable=SC1091
+  source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+fi
+if [ -f /usr/share/vcstool-completion/vcs.bash ]; then
+  # shellcheck disable=SC1091
+  source /usr/share/vcstool-completion/vcs.bash
+fi
+if [ -f /usr/share/colcon_cd/function/colcon_cd.sh ]; then
+  # shellcheck disable=SC1091
+  source /usr/share/colcon_cd/function/colcon_cd.sh
+fi
+export _colcon_cd_root="$ROS_TEAM1_ROOT"
+
+# Use the dedicated OpenMANIPULATOR dependency workspace only through
+# workspace.sh. Do not source the legacy ~/Ros/move_arm overlay globally.
+if [ -z "${ARUCO_DEPENDENCY_SETUP:-}" ] \
+  && [ -f "$HOME/Ros/open_manipulator_ws/install/setup.bash" ]; then
+  export ARUCO_DEPENDENCY_SETUP="$HOME/Ros/open_manipulator_ws/install/setup.bash"
+fi
+
+# Make this repository's install the final overlay when it already exists.
+# workspace.sh still verifies the exact prefix before running Gazebo.
+if [ -f "$ROS_TEAM1_ROOT/install/setup.bash" ]; then
+  # shellcheck disable=SC1090
+  source "$ROS_TEAM1_ROOT/install/setup.bash"
+fi
+
+# ROS network. Do not force ROS_LOCALHOST_ONLY so physical devices remain usable.
+export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
+
+# Project commands.
+ros_team1() {
+  if [ ! -f "$ROS_TEAM1_HELPER" ]; then
+    printf 'ROS_Team1 helper not found: %s\n' "$ROS_TEAM1_HELPER" >&2
+    return 1
+  fi
+  bash "$ROS_TEAM1_HELPER" "$@"
+}
+
+team1() {
+  cd "$ROS_TEAM1_ROOT" || return
+}
+
+manip() {
+  cd "$MANIPULATOR_PKG" || return
+}
+
+killgazebo() {
+  # Ask Gazebo processes to terminate cleanly before using stronger measures.
+  killall gazebo gzserver gzclient gz 2>/dev/null || true
+}
+
+alias cb='ros_team1 build'
+alias team1doctor='ros_team1 doctor'
+alias team1run='ros_team1 run'
+alias team1status='ros_team1 status'
+alias sb='source "$HOME/.bashrc"'

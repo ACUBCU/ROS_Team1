@@ -59,7 +59,7 @@ def _add_link5_camera(root) -> None:
             origin = ET.SubElement(camera_joint, "origin")
     origin.set("xyz", "0.05 0 0.04")
     # Gazebo camera optical axis is +X. Rotate it toward the table (-Z of link5).
-    origin.set("rpy", "0 1.57079632679 0")
+    origin.set("rpy", "0 0 0")
 
     camera_gazebo = None
     for gazebo in root.findall("./gazebo"):

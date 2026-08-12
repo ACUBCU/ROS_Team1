@@ -22,7 +22,8 @@ class ArucoDetector(Node):
 
         if not hasattr(cv2, "aruco"):
             raise RuntimeError(
-                "현재 OpenCV에 aruco 모듈이 없습니다. python3-opencv를 설치하세요."
+                "현재 OpenCV에 aruco 모듈이 없습니다. "
+                "python3-opencv를 설치하세요."
             )
 
         self.declare_parameter("image_topic", "/gripper_camera/image_raw")

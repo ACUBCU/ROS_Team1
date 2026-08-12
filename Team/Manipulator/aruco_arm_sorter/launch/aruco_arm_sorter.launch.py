@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, RegisterEventHandler
+from launch.actions import IncludeLaunchDescription, LogInfo, RegisterEventHandler
 from launch.actions import SetEnvironmentVariable
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -15,8 +15,34 @@ import xacro
 from aruco_arm_sorter.robot_description import customize_robot_description
 
 
+def _expanded_path(value: str) -> Path:
+    return Path(os.path.expandvars(os.path.expanduser(value))).resolve()
+
+
+def _verify_active_prefix(package_share: str) -> Path:
+    """Stop before Gazebo if a requested ROS_Team1 install is not active."""
+
+    active = Path(package_share).absolute().parent.parent.resolve()
+    expected_value = os.environ.get("ARUCO_ARM_SORTER_EXPECTED_PREFIX", "").strip()
+    workspace_value = os.environ.get("ARUCO_ARM_SORTER_WORKSPACE_ROOT", "").strip()
+    expected = None
+    if expected_value:
+        expected = _expanded_path(expected_value)
+    elif workspace_value:
+        expected = _expanded_path(workspace_value) / "install" / "aruco_arm_sorter"
+
+    if expected is not None and active != expected.resolve():
+        raise RuntimeError(
+            "다른 작업공간의 aruco_arm_sorter가 선택됐습니다: "
+            f"현재={active}, 기대={expected.resolve()}. "
+            "Team/Manipulator/workspace.sh run으로 실행하세요."
+        )
+    return active
+
+
 def generate_launch_description():
     package_share = get_package_share_directory("aruco_arm_sorter")
+    active_prefix = _verify_active_prefix(package_share)
     description_share = get_package_share_directory("open_manipulator_description")
     bringup_share = get_package_share_directory("open_manipulator_bringup")
     ros_gz_share = get_package_share_directory("ros_gz_sim")
@@ -133,6 +159,7 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
+            LogInfo(msg=f"aruco_arm_sorter 활성 prefix: {active_prefix}"),
             SetEnvironmentVariable(
                 "GZ_SIM_RESOURCE_PATH", os.pathsep.join(resource_entries)
             ),

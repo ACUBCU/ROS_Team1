@@ -9,7 +9,9 @@ class StableMarkerGate:
     def __init__(self, allowed_ids: Iterable[int], required_frames: int) -> None:
         self.allowed_ids: Set[int] = {int(value) for value in allowed_ids}
         if not self.allowed_ids:
-            raise ValueError("allowed_ids에는 하나 이상의 마커 ID가 필요합니다.")
+            raise ValueError(
+                "allowed_ids에는 하나 이상의 마커 ID가 필요합니다."
+            )
         self.required_frames = int(required_frames)
         if self.required_frames < 1:
             raise ValueError("required_frames는 1 이상이어야 합니다.")

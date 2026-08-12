@@ -71,7 +71,9 @@ def _validate_range(value: float, limits: Tuple[float, float], label: str) -> No
 def _absolute_name(value, label: str) -> str:
     name = str(value or "").strip()
     if not name.startswith("/"):
-        raise ValueError(f"{label}는 /로 시작하는 절대 이름이어야 합니다.")
+        raise ValueError(
+            f"{label}는 /로 시작하는 절대 이름이어야 합니다."
+        )
     return name
 
 
@@ -80,7 +82,9 @@ def load_motion_config(path) -> MotionConfig:
 
     source = Path(path)
     if not source.is_file():
-        raise FileNotFoundError(f"동작 설정 파일을 찾을 수 없습니다: {source}")
+        raise FileNotFoundError(
+            f"동작 설정 파일을 찾을 수 없습니다: {source}"
+        )
 
     with source.open("r", encoding="utf-8") as stream:
         raw = yaml.safe_load(stream)
@@ -100,7 +104,9 @@ def load_motion_config(path) -> MotionConfig:
     for joint in ARM_JOINTS:
         pair = limits_raw.get(joint)
         if not isinstance(pair, list) or len(pair) != 2:
-            raise ValueError(f"limits.{joint}는 [최솟값, 최댓값]이어야 합니다.")
+            raise ValueError(
+                f"limits.{joint}는 [최솟값, 최댓값]이어야 합니다."
+            )
         limits = (
             _as_float(pair[0], f"limits.{joint}[0]"),
             _as_float(pair[1], f"limits.{joint}[1]"),
@@ -151,7 +157,8 @@ def load_motion_config(path) -> MotionConfig:
     )
     if observation_duration <= 0.0 or observation_hold < 0.0:
         raise ValueError(
-            "observation.duration은 양수, observation.hold는 0 이상이어야 합니다."
+            "observation.duration은 양수, observation.hold는 "
+            "0 이상이어야 합니다."
         )
 
     events_raw = _require_mapping(root.get("events"), "events")
@@ -174,14 +181,18 @@ def load_motion_config(path) -> MotionConfig:
         try:
             marker_id = int(marker_value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"마커 ID는 정수여야 합니다: {marker_value!r}") from exc
+            raise ValueError(
+                f"마커 ID는 정수여야 합니다: {marker_value!r}"
+            ) from exc
         marker_sequences[marker_id] = str(sequence_name)
 
     sequences_raw = _require_mapping(root.get("sequences"), "sequences")
     sequences = {}
     for sequence_name, step_values in sequences_raw.items():
         if not isinstance(step_values, list) or not step_values:
-            raise ValueError(f"sequences.{sequence_name}에는 동작 단계가 필요합니다.")
+            raise ValueError(
+                f"sequences.{sequence_name}에는 동작 단계가 필요합니다."
+            )
         parsed_steps = []
         for index, value in enumerate(step_values):
             label = f"sequences.{sequence_name}[{index}]"
@@ -203,14 +214,16 @@ def load_motion_config(path) -> MotionConfig:
             hold = _as_float(step_raw.get("hold", 0.0), f"{label}.hold")
             if duration <= 0.0 or hold < 0.0:
                 raise ValueError(
-                    f"{label}의 duration은 양수, hold는 0 이상이어야 합니다."
+                    f"{label}의 duration은 양수, hold는 "
+                    "0 이상이어야 합니다."
                 )
 
             after_value = step_raw.get("after")
             after = None if after_value in (None, "") else str(after_value)
             if after is not None and after not in events:
                 raise ValueError(
-                    f"{label}.after에 정의되지 않은 event가 있습니다: {after}"
+                    f"{label}.after에 정의되지 않은 event가 있습니다: "
+                    f"{after}"
                 )
 
             parsed_steps.append(
@@ -228,7 +241,8 @@ def load_motion_config(path) -> MotionConfig:
     for marker_id, sequence_name in marker_sequences.items():
         if sequence_name not in sequences:
             raise ValueError(
-                f"markers.{marker_id}가 존재하지 않는 sequence를 가리킵니다: "
+                f"markers.{marker_id}가 존재하지 않는 sequence를 "
+                "가리킵니다: "
                 f"{sequence_name}"
             )
 
@@ -241,7 +255,8 @@ def load_motion_config(path) -> MotionConfig:
     )
     if startup_delay < 0.0 or action_server_timeout <= 0.0:
         raise ValueError(
-            "startup_delay는 0 이상, action_server_timeout은 양수여야 합니다."
+            "startup_delay는 0 이상, action_server_timeout은 "
+            "양수여야 합니다."
         )
 
     return MotionConfig(

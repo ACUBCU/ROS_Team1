@@ -127,11 +127,13 @@ class ArmSequenceController(Node):
                 else:
                     self.processed_ids.add(marker_id)
                     self._publish_status(f"DONE marker={marker_id}")
+
+                    # 관찰 자세 복귀까지 성공한 경우에만 다음 마커를 인식합니다.
+                    if not self.stop_event.is_set():
+                        self._publish_status("READY")
                 finally:
                     self._publish_active_id(-1)
                     self.pending.task_done()
-                    if not self.stop_event.is_set():
-                        self._publish_status("READY")
         except Exception as exc:
             self.get_logger().error(f"초기화 실패: {type(exc).__name__}: {exc}")
             self._publish_status(f"ERROR initialization: {exc}")
@@ -148,19 +150,50 @@ class ArmSequenceController(Node):
                     self.get_logger().info(f"Action server 연결: {name}")
                     break
                 if time.monotonic() >= deadline:
-                    raise TimeoutError(f"Action server를 찾지 못했습니다: {name}")
+                    raise TimeoutError(
+                        f"Action server를 찾지 못했습니다: {name}"
+                    )
             if self.stop_event.is_set():
                 raise RuntimeError("노드 종료 중")
 
     def _run_sequence(self, marker_id: int) -> None:
         sequence_name = self.config.marker_sequences[marker_id]
-        steps = self.config.sequences[sequence_name]
+
+        # 원본 설정 목록을 직접 변경하지 않도록 복사합니다.
+        steps = list(self.config.sequences[sequence_name])
+
+        # 모든 운반 동작이 반드시 카메라 관찰 자세로 끝나도록 합니다.
+        return_to_observation = MotionStep(
+            name="return_to_observation",
+            positions=self.config.observation_positions,
+            gripper=self.config.observation_gripper,
+            duration=self.config.observation_duration,
+            hold=self.config.observation_hold,
+            after=None,
+        )
+
+        # YAML의 마지막 단계가 이미 관찰 자세이면 해당 단계를 교체하고,
+        # 관찰 자세가 아니면 마지막에 새로 추가합니다.
+        if (
+            steps
+            and steps[-1].positions == self.config.observation_positions
+            and abs(
+                steps[-1].gripper - self.config.observation_gripper
+            ) <= 1.0e-6
+        ):
+            steps[-1] = return_to_observation
+        else:
+            steps.append(return_to_observation)
+
         self._publish_active_id(marker_id)
-        self._publish_status(f"RUNNING marker={marker_id} sequence={sequence_name}")
+        self._publish_status(
+            f"RUNNING marker={marker_id} sequence={sequence_name}"
+        )
+
         for index, step in enumerate(steps, start=1):
             self._publish_status(
-                f"RUNNING marker={marker_id} step={index}/{len(steps)} "
-                f"name={step.name}"
+                f"RUNNING marker={marker_id} "
+                f"step={index}/{len(steps)} name={step.name}"
             )
             self._execute_step(step, marker_id)
 
