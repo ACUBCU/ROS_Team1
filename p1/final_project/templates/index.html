@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>로봇 통합 관제 대시보드</title>
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto 30px auto; }
+        .cam-card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .cam-card h3 { margin: 0 0 15px 0; color: #444; font-size: 18px; }
+        .video-container { width: 100%; aspect-ratio: 4/3; background-color: #111; border-radius: 8px; overflow: hidden; border: 2px solid #ddd; }
+        img { width: 100%; height: 100%; object-fit: cover; }
+        .control-panel { background: #fff; padding: 20px; border-radius: 12px; max-width: 1200px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .input-group { display: flex; gap: 20px; font-size: 18px; font-weight: bold; }
+        .input-group input { font-size: 18px; padding: 5px; width: 80px; text-align: center; }
+        .button-group { display: flex; gap: 15px; }
+        button { background-color: #17a2b8; color: white; font-size: 18px; font-weight: bold; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-start { background-color: #28a745; }
+        .btn-reset { background-color: #dc3545; }
+    </style>
+    <script>
+        function applyMarkers() {
+            const cubeId = document.getElementById('cubeId').value;
+            const placeId = document.getElementById('placeId').value;
+            fetch('/api/set_markers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cube: parseInt(cubeId), place: parseInt(placeId) })
+            })
+            .then(response => response.json())
+            .then(data => { 
+                if(data.status === 'success') {
+                    alert(`벽면 마커 적용 완료: 큐브 [${cubeId}], 장소 [${placeId}]`); 
+                }
+            });
+        }
+
+        function startRobot() {
+            const cubeId = document.getElementById('cubeId').value;
+            const placeId = document.getElementById('placeId').value;
+            fetch('/api/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cube: parseInt(cubeId), place: parseInt(placeId) })
+            })
+            .then(response => response.json())
+            .then(data => { 
+                if(data.status === 'success') {
+                    alert(`로봇 이동 시작: 큐브 [${cubeId}] -> 장소 [${placeId}]`); 
+                }
+            });
+        }
+
+        function resetRobot() {
+            fetch('/api/reset', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => { 
+                if(data.status === 'success') {
+                    alert("월드 초기화 명령이 전송되었습니다."); 
+                }
+            });
+        }
+    </script>
+</head>
+<body>    
+    <div class="dashboard-grid">
+        <div class="cam-card">
+            <h3>Top View</h3>
+            <div class="video-container"><img src="/video/top" alt="Top Camera"></div>
+        </div>
+        <!-- <div class="cam-card">
+            <h3>큐브 뷰 (Cube View)</h3>
+            <div class="video-container"><img src="/video/cube" alt="Cube Camera"></div>
+        </div>
+        <div class="cam-card">
+            <h3>장소 뷰 (Place View)</h3>
+            <div class="video-container"><img src="/video/place" alt="Place Camera"></div>
+        </div> -->
+        <div class="cam-card">
+            <h3>Gripper View</h3>
+            <div class="video-container"><img src="/video/gripper" alt="Gripper Camera"></div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="input-group">
+            <label>큐브 마커 ID (0~5): <input type="number" id="cubeId" min="0" max="5" value="0"></label>
+            <label>장소 마커 ID (6~10): <input type="number" id="placeId" min="6" max="10" value="6"></label>
+        </div>
+        <div class="button-group">
+            <button onclick="applyMarkers()">마커 생성</button>
+            <button class="btn-start" onclick="startRobot()">이동 시작</button>
+            <button class="btn-reset" onclick="resetRobot()">큐브 초기화</button>
+        </div>
+    </div>
+</body>
+</html>
