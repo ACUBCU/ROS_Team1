@@ -67,10 +67,10 @@
 
 ### 5.1. 데이터 송수신 스키마
 
-* **ROS 2 내부 데이터 흐름**:
-* 비전 토픽: `/camera_top/image_raw`, `/gripper_camera/image_raw`
-* 제어 토픽: `/detected_aruco_ids`, `/start_command`, `/reset_command`, `/set_wall_markers`
-* 액션 통신: `/arm_controller/follow_joint_trajectory`, `/gripper_controller/gripper_cmd`
+* **ROS 2 내부 데이터 흐름**:  
+비전 토픽: `/camera_top/image_raw`, `/gripper_camera/image_raw`  
+제어 토픽: `/detected_aruco_ids`, `/start_command`, `/reset_command`, `/set_wall_markers`  
+액션 통신: `/arm_controller/follow_joint_trajectory`, `/gripper_controller/gripper_cmd`  
 * **웹 ↔ 서버**: HTTP REST API (POST/JSON 송수신) 및 MJPEG Multipart 스트리밍.
 
 ---
@@ -103,7 +103,7 @@
 
 ### 8.1. 실시간 동작 환경
 
-스트리밍 영상 해상도를 `cv2.resize()`로 낮추고 움직임을 보여주는 최소한의 카메라만 사용하여 시뮬레이터 구동
+스트리밍 영상 해상도를 `cv2.resize()`로 낮추고 움직임을 보여주는 최소한의 카메라만 사용하여 시뮬레이터 구동.
 
 ### 8.2. 타임아웃 무한 대기 (Event 제어)
 
