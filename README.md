@@ -4,7 +4,7 @@
 **md**
 * PLAN : [수행계획서](./PLAN.md)
 * DEV_LOG : [일자별 개발 기록](./DEV_LOG.md)
-* TECH : [기술서](./TECH.md)
+* TECH : [기술서](./TECH.md)    
 
 **folder**
 * settings : 프로젝트 진행시 통일해야 할 것으로 보이는 설정 경로 및 파일
