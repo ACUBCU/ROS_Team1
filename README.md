@@ -11,3 +11,4 @@
 * final_project_ws : 기본 작업 환경
 * Team : 팀 작업물
 * p1 : 결과물 폴더
+* other : 그 외 진행사항들
