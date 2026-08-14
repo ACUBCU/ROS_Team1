@@ -1,0 +1,186 @@
+<?xml version="1.0" ?>
+<sdf version='1.10'>
+  <model name='aruco_cube'>
+    <link name="cube_link">
+        <inertial>
+            <mass>0.05</mass>
+            <inertia>
+                <ixx>0.0000208</ixx>
+                <iyy>0.0000208</iyy>
+                <izz>0.0000208</izz>
+                <ixy>0</ixy>
+                <ixz>0</ixz>
+                <iyz>0</iyz>
+            </inertia>
+        </inertial>
+
+        <collision name="cube_collision">
+            <geometry>
+                <box>
+                <size>0.05 0.05 0.05</size>
+                </box>
+            </geometry>
+
+            <surface>
+                <friction>
+                <ode>
+                    <mu>50</mu>
+                    <mu2>50</mu2>
+                </ode>
+                </friction>
+                <!-- kp(강성)/kd(감쇠)를 안 정해두면 물리엔진 기본값(무른 편)을 써서 그리퍼
+                     손가락이 박스 표면을 파고든 채로 힘 균형을 맞춤(시각적으로 뚫고 들어간
+                     것처럼 보임). 값을 높여서 덜 파고들게 함. -->
+                <contact>
+                <ode>
+                    <kp>1e8</kp>
+                    <kd>1</kd>
+                </ode>
+                </contact>
+            </surface>
+        </collision>
+
+        <visual name="cube_visual">
+            <geometry>
+                <box>
+                <size>0.05 0.05 0.05</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <specular>0.1 0.1 0.1 1</specular>
+            </material>
+        </visual>
+
+
+        <visual name="aruco_top_visual">
+            <pose>0 0 0.0251 0 0 0</pose>
+            <geometry>
+                <box>
+                    <size>0.04 0.04 0.0001</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <pbr>
+                    <metal>
+                        <albedo_map>
+                            material/textures/aruco_0.png
+                        </albedo_map>
+                        <roughness>1.0</roughness>
+                        <metalness>0.0</metalness>
+                    </metal>
+                </pbr>
+            </material>
+        </visual>
+        <visual name="aruco_bottom_visual">
+            <pose>0 0 -0.0251 0 3.1416 0</pose>
+            <geometry>
+                <box>
+                    <size>0.04 0.04 0.0001</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <pbr>
+                    <metal>
+                        <albedo_map>
+                            material/textures/aruco_0.png
+                        </albedo_map>
+                        <roughness>1.0</roughness>
+                        <metalness>0.0</metalness>
+                    </metal>
+                </pbr>
+            </material>
+        </visual>
+        <visual name="aruco_posx_visual">
+            <pose>0.0251 0 0 0 1.5708 0</pose>
+            <geometry>
+                <box>
+                    <size>0.04 0.04 0.0001</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <pbr>
+                    <metal>
+                        <albedo_map>
+                            material/textures/aruco_0.png
+                        </albedo_map>
+                        <roughness>1.0</roughness>
+                        <metalness>0.0</metalness>
+                    </metal>
+                </pbr>
+            </material>
+        </visual>
+        <visual name="aruco_negx_visual">
+            <pose>-0.0251 0 0 0 -1.5708 0</pose>
+            <geometry>
+                <box>
+                    <size>0.04 0.04 0.0001</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <pbr>
+                    <metal>
+                        <albedo_map>
+                            material/textures/aruco_0.png
+                        </albedo_map>
+                        <roughness>1.0</roughness>
+                        <metalness>0.0</metalness>
+                    </metal>
+                </pbr>
+            </material>
+        </visual>
+        <visual name="aruco_posy_visual">
+            <pose>0 0.0251 0 -1.5708 0 0</pose>
+            <geometry>
+                <box>
+                    <size>0.04 0.04 0.0001</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <pbr>
+                    <metal>
+                        <albedo_map>
+                            material/textures/aruco_0.png
+                        </albedo_map>
+                        <roughness>1.0</roughness>
+                        <metalness>0.0</metalness>
+                    </metal>
+                </pbr>
+            </material>
+        </visual>
+        <visual name="aruco_negy_visual">
+            <pose>0 -0.0251 0 1.5708 0 0</pose>
+            <geometry>
+                <box>
+                    <size>0.04 0.04 0.0001</size>
+                </box>
+            </geometry>
+            <material>
+                <ambient>1 1 1 1</ambient>
+                <diffuse>1 1 1 1</diffuse>
+                <pbr>
+                    <metal>
+                        <albedo_map>
+                            material/textures/aruco_0.png
+                        </albedo_map>
+                        <roughness>1.0</roughness>
+                        <metalness>0.0</metalness>
+                    </metal>
+                </pbr>
+            </material>
+        </visual>
+
+    </link>
+  </model>
+</sdf>
