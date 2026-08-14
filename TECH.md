@@ -119,3 +119,4 @@
 
 * **GitHub Repository**: [https://github.com/ACUBCU/ROS_Team1](https://github.com/ACUBCU/ROS_Team1)
 * **발표 자료**: [발표 자료](https://docs.google.com/presentation/d/1QUFMRrnHLzvYb9o2nvBDHGcFmhemkZrwfRGsW1nHXsU/edit?usp=sharing)
+* **시연 영상**: [시연 영상](p1/video)
